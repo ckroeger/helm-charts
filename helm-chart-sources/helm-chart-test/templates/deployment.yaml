@@ -1,61 +1,62 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "helm-chart-test.fullname" . }}
+  name: {{ required "a valid name is required" .Values.name }}
   labels:
-    {{- include "helm-chart-test.labels" . | nindent 4 }}
+    app: {{ required "a valid name is required" .Values.name }}
+
+    app.kubernetes.io/name: {{ required "a valid name is required" .Values.name }}
+    app.kubernetes.io/instance: "{{ .Release.Name }}"
+    app.kubernetes.io/managed-by: "{{ .Release.Service }}"
+    app.kubernetes.io/version: "{{ .Values.appVersion }}"
+
+    helm.sh/chart-name: "{{ .Chart.Name }}"
+    helm.sh/chart-version: "{{ .Chart.Version }}"
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
+  replicas: {{ required "a valid replicas is required" .Values.replicas }}
   selector:
     matchLabels:
-      {{- include "helm-chart-test.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: {{ required "a valid name is required" .Values.name }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
-        {{- include "helm-chart-test.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/name: {{ required "a valid name is required" .Values.name }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "helm-chart-test.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ required "a valid name is required" .Values.name }}
       containers:
-        - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+        - name: {{ required "a valid name is required" .Values.name }}
+          image: '{{ required "a valid container.image.registry is required" .Values.container.image.registry }}{{ required "a valid container.image.name is required" .Values.container.image.name }}:{{ .Chart.AppVersion }}'
           ports:
-            - name: http
-              containerPort: 80
+            - name: webserver
+              containerPort: 8081
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
-              port: http
+              path: /version
+              port: 8085
+              scheme: HTTP
+            initialDelaySeconds: {{ required "a valid livenessProbe.initialDelaySeconds is required" .Values.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ required "a valid livenessProbe.timeoutSeconds is required" .Values.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ required "a valid livenessProbe.periodSeconds is required" .Values.livenessProbe.periodSeconds }}
+            successThreshold: {{ required "a valid livenessProbe.successThreshold is required" .Values.livenessProbe.successThreshold }}
+            failureThreshold: {{ required "a valid livenessProbe.failureThreshold is required" .Values.livenessProbe.failureThreshold }}
+
           readinessProbe:
             httpGet:
-              path: /
-              port: http
+              path: /version
+              port: 8085
+              scheme: HTTP
+            initialDelaySeconds: {{ required "a valid readinessProbe.initialDelaySeconds is required" .Values.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ required "a valid readinessProbe.timeoutSeconds is required" .Values.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ required "a valid readinessProbe.periodSeconds is required" .Values.readinessProbe.periodSeconds }}
+            successThreshold: {{ required "a valid readinessProbe.successThreshold is required" .Values.readinessProbe.successThreshold }}
+            failureThreshold: {{ required "a valid readinessProbe.failureThreshold is required" .Values.readinessProbe.failureThreshold }}
+
+
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+            requests:
+              cpu: '{{ required "a valid resources.requests.cpu is required" .Values.resources.requests.cpu }}'
+              memory: '{{ required "a valid resources.requests.memory is required" .Values.resources.requests.memory }}'
+            limits:
+              cpu: '{{ required "a valid resources.limits.cpu is required" .Values.resources.limits.cpu }}'
+              memory: '{{ required "a valid resources.limits.memory is required" .Values.resources.limits.memory }}'

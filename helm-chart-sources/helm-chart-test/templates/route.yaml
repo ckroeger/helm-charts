@@ -1,0 +1,20 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: {{ required "a valid name is required" .Values.name }}-route
+
+  labels:
+    app.kubernetes.io/name: {{ required "a valid name is required" .Values.name }}
+    app.kubernetes.io/instance: "{{ .Release.Name }}"
+    app.kubernetes.io/managed-by: "{{ .Release.Service }}"
+    app.kubernetes.io/version: "{{ .Values.appVersion }}"
+spec:
+  host: >-
+    {{ required "a valid name is required" .Values.name }}.{{ required "a valid openshift.cluster_project is required" .Values.openshift.cluster_project }}.{{ required "a valid openshift.cluster_host is required" .Values.openshift.cluster_host }}
+  to:
+    kind: Service
+    name: {{ required "a valid name is required" .Values.name }}
+    weight: 100
+  port:
+    targetPort: webserver
+  wildcardPolicy: None
