@@ -25,7 +25,7 @@ spec:
       serviceAccountName: {{ required "a valid name is required" .Values.name }}
       containers:
         - name: {{ required "a valid name is required" .Values.name }}
-          image: '{{ required "a valid container.image.registry is required" .Values.container.image.registry }}{{ required "a valid container.image.name is required" .Values.container.image.name }}:{{ .Chart.AppVersion }}'
+          image: remote.adcr.io/ubi8/nginx-118:1-73
           ports:
             - name: webserver
               containerPort: 8081

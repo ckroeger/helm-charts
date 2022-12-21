@@ -5,7 +5,7 @@ openshift:
 apiVersion: v2
 
 version: 0.1.0-local
-name: test
+name: helm-chart-test
 appVersion: "0.1.0-local"
 description: "Description"
 
